@@ -1,9 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { z } = require("zod");
-const { UserModel } = require("../db");
+const { UserModel, AccountModel } = require("../db");
 const AuthMiddleware = require("../middleware/middleware");
 
 const router = express.Router();
@@ -67,12 +66,16 @@ router.post("/signup", async (req, res) => {
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await UserModel.create({
+    const user = await UserModel.create({
       username,
       firstname,
       lastname,
       email,
       password: hashedPassword,
+    });
+    await AccountModel.create({
+      userId: user._id,
+      balance: 0,
     });
     res.status(200).json({
       success: true,
@@ -114,8 +117,11 @@ router.post("/signin", async (req, res) => {
     res
       .status(200)
       .cookie("token", token, {
-        sameSite: true,
-        secure: true,
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: "Strict",
+        path: "/",
+        maxAge: 1000 * 60 * 60 * 24,
       })
       .json({
         success: true,
@@ -130,28 +136,22 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-router.get("/all-users", (req, res) => {});
-
-router.put("/update-profile", AuthMiddleware, async (req, res) => {
+router.get("/all-users", AuthMiddleware, async (req, res) => {
   try {
-    const userId = req.userId;
-    const { firstname, lastname, password } = req.body;
-    const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const updatedUser = await UserModel.findByIdAndUpdate(userId, {
-      firstname,
-      lastname,
-      password: hashedPassword,
-    });
-    if (!updatedUser) {
-      return res.status(300).json({
-        success: false,
-        message: "Updating Failed",
+    const allUsers = await UserModel.find().select("-password");
+
+    if (allUsers.length === 0) {
+      return res.status(400).json({
+        success: true,
+        data: allUsers,
+        message: "Users not found",
       });
     }
+
     res.status(200).json({
-      success: false,
-      message: "Updated Successfully",
+      success: true,
+      message: "Users Fetched Successfully",
+      data: allUsers,
     });
   } catch (error) {
     console.log(error);
@@ -160,6 +160,136 @@ router.put("/update-profile", AuthMiddleware, async (req, res) => {
       message: "Internal Server Error",
     });
   }
+});
+router.get("/user", AuthMiddleware, async (req, res) => {
+  try {
+    const filter = req.query.filter || "";
+
+    const users = await UserModel.find({
+      $or: [
+        {
+          firstname: {
+            $regex: filter,
+          },
+        },
+        {
+          lastname: {
+            $regex: filter,
+          },
+        },
+      ],
+    }).select("-password");
+
+    if (users.length === 0) {
+      return res.status(400).json({
+        success: true,
+        data: users,
+        message: "Users not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Users Fetched Successfully",
+      data: users.map((user) => ({
+        username: user.username,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        _id: user._id,
+      })),
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+router.put("/update-profile", AuthMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId._id;
+    const { firstname, lastname, password } = req.body;
+    const zodSchema = z.object({
+      firstname: z
+        .string()
+        .min(1, { message: "Fist Name length must be greater than 4" }),
+      lastname: z
+        .string()
+        .min(1, { message: "Last Name length must be greater than 1" }),
+      password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number")
+        .regex(/[\W_]/, "Password must contain at least one special character"),
+    });
+
+    const validationResult = zodSchema.safeParse({
+      firstname,
+      lastname,
+      password,
+    });
+
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.errors.map(
+        (err) => err.message
+      );
+      return res.status(300).json({
+        success: false,
+        message: errorMessages,
+      });
+    }
+
+    const existingUser = await UserModel.findById(userId);
+    if (existingUser) {
+      const isMatchedPassword = await bcrypt.compare(
+        password,
+        existingUser.password
+      );
+      if (isMatchedPassword) {
+        return res.status(300).json({
+          success: false,
+          message:
+            "Password is macthed with old password please use another one",
+        });
+      }
+      const salt = await bcrypt.genSalt(12);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const updatedUser = await UserModel.findByIdAndUpdate(userId, {
+        firstname,
+        lastname,
+        password: hashedPassword,
+      });
+      if (!updatedUser) {
+        return res.status(300).json({
+          success: false,
+          message: "Updating Failed",
+        });
+      }
+      res.status(200).json({
+        success: false,
+        message: "Updated Successfully",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+router.get("/auth/check-auth", AuthMiddleware, (req, res) => {
+  const user = req.user;
+  res.status(200).json({
+    success: true,
+    message: "Authenticated User!",
+    user: user,
+  });
 });
 
 module.exports = router;
