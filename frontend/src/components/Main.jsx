@@ -54,7 +54,7 @@ const Main = () => {
               >
                 Send Money
               </button>
-              <button
+              {/* <button
                 onClick={() => {
                   setIsModalOpen(true);
                   setType("request_money");
@@ -62,7 +62,7 @@ const Main = () => {
                 className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-md font-semibold transition duration-300 ease-in-out transform hover:scale-105"
               >
                 Request Money
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
