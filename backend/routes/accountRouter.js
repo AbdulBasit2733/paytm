@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const { UserModel, AccountModel } = require("../db");
+const { UserModel, AccountModel, TransactionModel } = require("../db");
 const AuthMiddleware = require("../middleware/middleware");
 
 const router = express.Router();
@@ -40,7 +40,7 @@ router.post("/add-balance", AuthMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId._id;
     const { amount } = req.body;
-    
+
     // Validate amount
     if (typeof amount !== "number" || amount <= 0) {
       return res.status(400).json({
@@ -139,9 +139,23 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
     );
 
     await AccountModel.updateOne(
-      { userId: toAccountUserId }, 
+      { userId: toAccountUserId },
       { $inc: { balance: amount } },
       { session }
+    );
+
+    await TransactionModel.create(
+      [
+        {
+          userId: fromAccountUserId,
+          receiverUserId: toAccountUserId,
+          amount: amount,
+          receiverAccountId: receiverAccount._id,
+        },
+      ],
+      {
+        session: session,
+      }
     );
 
     await session.commitTransaction();
@@ -149,6 +163,42 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
     res.status(200).json({
       success: true,
       message: `${amount} rupees transferred successfully.`,
+    });
+  } catch (error) {
+    console.error("Error transferring funds:", error);
+    await session.abortTransaction();
+    res.status(500).json({ success: false, message: "Internal Server Error." });
+  } finally {
+    session.endSession();
+  }
+});
+router.get("/check-transactions", AuthMiddleware, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const userId = req.user.userId._id;
+
+    const transactions = await TransactionModel.find({ userId: userId })
+      .session(session)
+      .populate("userId", "-password")
+      .populate("receiverUserId", "-password")
+      .populate("receiverAccountId");
+
+    if (transactions.length === 0) {
+      session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "No Transactions Happend From This Account !",
+      });
+    }
+
+    await session.commitTransaction();
+
+    res.status(200).json({
+      success: true,
+      data: transactions,
+      message: `Transactions fetched Successfully`,
     });
   } catch (error) {
     console.error("Error transferring funds:", error);
