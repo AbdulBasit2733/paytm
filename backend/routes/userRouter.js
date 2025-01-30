@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const { z } = require("zod");
 const { UserModel, AccountModel } = require("../db");
 const AuthMiddleware = require("../middleware/middleware");
-
+const isProduction = process.env.NODE_ENV;
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
@@ -114,6 +114,8 @@ router.post("/signin", async (req, res) => {
       process.env.JWT_SECRET || "123321"
     );
 
+    const user = await AccountModel.findOne({userId:isUser._id}).populate("userId", "-password");
+
     res
       .status(200)
       .cookie("token", token, {
@@ -126,6 +128,7 @@ router.post("/signin", async (req, res) => {
       .json({
         success: true,
         message: "LoggedIn Successfully",
+        data:user
       });
   } catch (error) {
     console.log(error);
@@ -134,6 +137,14 @@ router.post("/signin", async (req, res) => {
       message: "Internal Server Error",
     });
   }
+});
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
+  res.status(200).json({
+    success: true,
+    message: "Logout Successfully",
+  });
 });
 
 router.get("/all-users", AuthMiddleware, async (req, res) => {
