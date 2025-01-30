@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signup } from "../store/auth-slice";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
-const Signup = ({ handleSignUp, isLoading }) => {
+const Signup = ({ isLoading }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     firstname: "",
@@ -20,7 +25,16 @@ const Signup = ({ handleSignUp, isLoading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleSignUp(formData);
+    dispatch(signup(formData)).then((data) => {
+      if (data.payload.success) {
+        toast.success(data.payload.message);
+        setTimeout(() => {
+          navigate('/auth/signin')
+        }, 1000);
+      } else {
+        toast.error(data.payload.message);
+      }
+    });
   };
 
   return (

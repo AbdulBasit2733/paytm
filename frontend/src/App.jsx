@@ -13,10 +13,9 @@ import { checkAuth } from "./store/auth-slice";
 
 const App = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated, isLoading, error, user } = useSelector(
+  const { isAuthenticated, isLoading } = useSelector(
     (state) => state.auth
   );
-  console.log(isAuthenticated, user);
 
   useEffect(() => {
     dispatch(checkAuth());
@@ -67,7 +66,7 @@ const App = () => {
               </CheckAuth>
             }
           >
-            <Route path="/" element={<Main user={user} />} />
+            <Route path="/" element={<Main/>} />
           </Route>
         </Routes>
       )}

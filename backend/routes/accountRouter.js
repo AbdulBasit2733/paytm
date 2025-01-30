@@ -40,7 +40,7 @@ router.post("/add-balance", AuthMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId._id;
     const { amount } = req.body;
-
+    
     // Validate amount
     if (typeof amount !== "number" || amount <= 0) {
       return res.status(400).json({
@@ -87,7 +87,7 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
 
   try {
     const fromAccountUserId = req.user.userId._id;
-    const { to: toAccountUserId, amount } = req.body;
+    const { recipientId: toAccountUserId, amount } = req.body;
 
     if (typeof amount !== "number" || amount <= 0) {
       await session.abortTransaction();
