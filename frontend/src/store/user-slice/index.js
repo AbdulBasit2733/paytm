@@ -1,19 +1,18 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { backendUrl } from "../../../config/config";
 
 export const fetchAllUsers = createAsyncThunk(
   "user/fetchAllUsers",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `${backendUrl}/api/v1/user/all-users`, // Added /api/v1/user
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${backendUrl}/api/v1/user/all-users`, {
+        withCredentials: true,
+      });
+
       return response.data;
     } catch (error) {
-      console.log(error?.response);
+      // console.log(error?.response);
       return rejectWithValue({
         success: false,
         message: error?.response?.data?.message || "Something Went Wrong",
@@ -28,14 +27,14 @@ export const addBalance = createAsyncThunk(
     try {
       const response = await axios.post(
         `${backendUrl}/api/v1/account/add-balance`, // Using the backendUrl from config
-        { amount },
+        amount,
         {
           withCredentials: true,
         }
       );
       return response.data;
     } catch (error) {
-      console.log(error?.response);
+      // console.log(error?.response);
       return rejectWithValue({
         success: false,
         message: error?.response?.data?.message || "Something Went Wrong",
@@ -56,7 +55,7 @@ export const requestMoney = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      console.log(error?.response);
+      // console.log(error?.response);
       return rejectWithValue({
         success: false,
         message: error?.response?.data?.message || "Something Went Wrong",
@@ -78,7 +77,7 @@ export const sendMoney = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      console.log(error?.response);
+      // console.log(error?.response);
       return rejectWithValue({
         success: false,
         message: error?.response?.data?.message || "Something Went Wrong",
@@ -96,10 +95,10 @@ export const checkTransactions = createAsyncThunk(
         {
           withCredentials: true,
         }
-      );    
+      );
       return response.data;
     } catch (error) {
-      console.log(error?.response);
+      // console.log(error?.response);
       return rejectWithValue({
         success: false,
         message: error?.response?.data?.message || "Something Went Wrong",
@@ -113,7 +112,7 @@ const userSlice = createSlice({
   initialState: {
     isLoading: true,
     user: null,
-    allUsers: null,
+    allUsers: [],
   },
   reducers: () => {},
   extraReducers: (builder) => {
@@ -123,11 +122,11 @@ const userSlice = createSlice({
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.allUsers = action.payload.success ? action.payload.data : null;
+        state.allUsers = action.payload.success ? action.payload.data : [];
       })
       .addCase(fetchAllUsers.rejected, (state) => {
         state.isLoading = false;
-        state.allUsers = null;
+        state.allUsers = [];
       });
   },
 });

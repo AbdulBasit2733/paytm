@@ -40,7 +40,6 @@ router.post("/add-balance", AuthMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId._id;
     const { amount } = req.body;
-
     // Validate amount
     if (typeof amount !== "number" || amount <= 0) {
       return res.status(400).json({
