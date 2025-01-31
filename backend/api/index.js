@@ -9,18 +9,21 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["POST", "GET", "PUT", "DELETE"],
-    credentials: true,
     allowedHeaders: [
       "Content-Type",
       "Authorization",
       "Cache-Control",
       "Expires",
       "Pragma",
-    ],
+    ], // Allowed headers in the request
+    credentials: true, // Allows cookies to be sent
+    preflightContinue: false, // Automatically handle preflight requests
+    optionsSuccessStatus: 200, // For legacy browsers (preflight requests might expect 200)
   })
 );
-
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.options("*", cors());
 
 const mainRouter = require("../routes/mainRouter");
 
