@@ -3,25 +3,29 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
-const PORT= process.env.PORT
+const PORT = process.env.PORT;
 const app = express();
 app.use(express.json());
 app.options("*", cors());
 app.use(cookieParser());
 
-const allowedOrigins = ['https://paytm-frontend-ruddy.vercel.app'];
+const allowedOrigins = ["https://paytm-frontend-ruddy.vercel.app"];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      // Allow requests with no origin (e.g., mobile apps, curl requests)
+      if (!origin) return callback(null, true);
+
+      // Check if the origin is in the allowedOrigins array
+      if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true); // Allow the origin
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS")); // Block the origin
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allows credentials (cookies, authorization headers)
+    credentials: true, // Allow credentials (cookies, authorization headers)
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -33,8 +37,6 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
-
-app.use(express.urlencoded({ extended: true }));
 
 // Handle Preflight Requests
 
