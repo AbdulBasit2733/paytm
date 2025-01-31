@@ -6,11 +6,9 @@ import axiosInstance from "../../axiosInstance";
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
-    console.log("Check Auth");
-
     try {
-      const response = await axios.get(
-        "http://localhost:3001/api/v1/user/auth/check-auth",
+      const response = await axiosInstance.get(
+        "/user/auth/check-auth",
         {
           headers: {
             "Cache-Control":
@@ -35,8 +33,8 @@ export const login = createAsyncThunk(
   "auth/login",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/v1/user/signin",
+      const response = await axiosInstance.post(
+        "/user/signin",
         formData,
         {
           withCredentials: true,
@@ -59,13 +57,9 @@ export const login = createAsyncThunk(
 
 export const signup = createAsyncThunk("auth/signup", async (formData) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3001/api/v1/user/signup",
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
+    const response = await axiosInstance.post("/user/signup", formData, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.log("Error Details:", error?.response?.data);
@@ -78,6 +72,7 @@ export const signup = createAsyncThunk("auth/signup", async (formData) => {
     });
   }
 });
+
 export const logoutFromServer = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
