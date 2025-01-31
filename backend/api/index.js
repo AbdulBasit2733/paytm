@@ -10,7 +10,6 @@ app.options("*", cors());
 app.use(cookieParser());
 
 const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
-
 app.use(
   cors({
     origin: allowedOrigins,
@@ -22,9 +21,9 @@ app.use(
       "Cache-Control",
       "Expires",
       "Pragma",
-    ], // Allowed headers in the request
-    preflightContinue: false, // Automatically handle preflight requests
-    optionsSuccessStatus: 200, // For legacy browsers (preflight requests might expect 200)
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 200,
   })
 );
 
