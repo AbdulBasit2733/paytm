@@ -7,7 +7,6 @@ const Header = ({ username }) => {
   const dispatch = useDispatch();
   const handleLogout = () => {
     dispatch(logoutFromServer()).then((data) => {
-      console.log(data.payload);
       if (data.payload.success) {
         toast.success(data.payload.message);
       } else {

@@ -55,8 +55,7 @@ const AmountInput = ({ amountRef }) => (
 );
 
 const Form = ({ onClose, type, recieverId }) => {
-  console.log(recieverId);
-  
+
   const { allUsers } = useSelector((state) => state.user);
   const { user } = useSelector((state) => state.auth);
   const [recipient, setRecipient] = useState("");

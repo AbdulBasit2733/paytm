@@ -9,8 +9,6 @@ export const fetchAllUsers = createAsyncThunk(
       const response = await axiosInstance.get("/user/all-users", {
         withCredentials: true,
       });
-      console.log(response.data);
-
       return response.data;
     } catch (error) {
       console.log(error?.response);
@@ -95,9 +93,7 @@ export const checkTransactions = createAsyncThunk(
         {
           withCredentials: true,
         }
-      );
-      console.log(response.data);
-      
+      );    
       return response.data;
     } catch (error) {
       console.log(error?.response);

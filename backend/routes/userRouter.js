@@ -13,7 +13,6 @@ router.post("/signup", async (req, res) => {
   // session.startTransaction();
   try {
     const { username, firstname, lastname, email, password } = req.body;
-    console.log(req.body);
 
     const zodSchema = z.object({
       username: z
