@@ -64,6 +64,7 @@ export const requestMoney = createAsyncThunk(
     }
   }
 );
+
 export const sendMoney = createAsyncThunk(
   "account/sendMoney",
   async ({ amount, recipientId }, { rejectWithValue }) => {
@@ -75,6 +76,28 @@ export const sendMoney = createAsyncThunk(
           withCredentials: true,
         }
       );
+      return response.data;
+    } catch (error) {
+      console.log(error?.response);
+      return rejectWithValue({
+        success: false,
+        message: error?.response?.data?.message || "Something Went Wrong",
+      });
+    }
+  }
+);
+export const checkTransactions = createAsyncThunk(
+  "account/checkTransactions",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(
+        "/account/check-transactions",
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response.data);
+      
       return response.data;
     } catch (error) {
       console.log(error?.response);

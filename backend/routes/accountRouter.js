@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const { UserModel, AccountModel } = require("../db");
+const { UserModel, AccountModel, TransactionModel } = require("../db");
 const AuthMiddleware = require("../middleware/middleware");
 
 const router = express.Router();
@@ -40,7 +40,7 @@ router.post("/add-balance", AuthMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId._id;
     const { amount } = req.body;
-    
+
     // Validate amount
     if (typeof amount !== "number" || amount <= 0) {
       return res.status(400).json({
@@ -139,9 +139,23 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
     );
 
     await AccountModel.updateOne(
-      { userId: toAccountUserId }, 
+      { userId: toAccountUserId },
       { $inc: { balance: amount } },
       { session }
+    );
+
+    await TransactionModel.create(
+      [
+        {
+          userId: fromAccountUserId,
+          receiverUserId: toAccountUserId,
+          amount: amount,
+          receiverAccountId: receiverAccount._id,
+        },
+      ],
+      {
+        session: session,
+      }
     );
 
     await session.commitTransaction();
@@ -156,6 +170,43 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error." });
   } finally {
     session.endSession();
+  }
+});
+router.get("/check-transactions", AuthMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId._id;
+
+    const sentTransactions = await TransactionModel.find({ userId })
+      .populate("userId", "-password")
+      .populate("receiverUserId", "-password")
+      .populate("receiverAccountId");
+
+    // Find transactions where the user is the receiver
+    const receivedTransactions = await TransactionModel.find({
+      receiverUserId: userId,
+    })
+      .populate("userId", "-password")
+      .populate("receiverUserId", "-password")
+      .populate("receiverAccountId");
+
+    if (sentTransactions.length === 0 && receivedTransactions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No transactions found for this user.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: { sentTransactions, receivedTransactions },
+      message: "Transactions fetched successfully.",
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error." });
   }
 });
 
