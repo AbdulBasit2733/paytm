@@ -173,39 +173,40 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
   }
 });
 router.get("/check-transactions", AuthMiddleware, async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const userId = req.user.userId._id;
 
-    const transactions = await TransactionModel.find({ userId: userId })
-      .session(session)
+    const sentTransactions = await TransactionModel.find({ userId })
       .populate("userId", "-password")
       .populate("receiverUserId", "-password")
       .populate("receiverAccountId");
 
-    if (transactions.length === 0) {
-      session.abortTransaction();
+    // Find transactions where the user is the receiver
+    const receivedTransactions = await TransactionModel.find({
+      receiverUserId: userId,
+    })
+      .populate("userId", "-password")
+      .populate("receiverUserId", "-password")
+      .populate("receiverAccountId");
+
+    if (sentTransactions.length === 0 && receivedTransactions.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No Transactions Happend From This Account !",
+        message: "No transactions found for this user.",
       });
     }
 
-    await session.commitTransaction();
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: transactions,
-      message: `Transactions fetched Successfully`,
+      data: { sentTransactions, receivedTransactions },
+      message: "Transactions fetched successfully.",
     });
   } catch (error) {
-    console.error("Error transferring funds:", error);
-    await session.abortTransaction();
-    res.status(500).json({ success: false, message: "Internal Server Error." });
-  } finally {
-    session.endSession();
+    console.error("Error fetching transactions:", error);
+
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error." });
   }
 });
 
