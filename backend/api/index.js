@@ -9,10 +9,10 @@ app.use(express.json());
 app.options("*", cors());
 app.use(cookieParser());
 
-const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: ["https://paytm-frontend-ruddy.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: [
@@ -21,9 +21,9 @@ app.use(
       "Cache-Control",
       "Expires",
       "Pragma",
-    ],
-    preflightContinue: false,
-    optionsSuccessStatus: 200,
+    ], // Allowed headers in the request
+    preflightContinue: false, // Automatically handle preflight requests
+    optionsSuccessStatus: 200, // For legacy browsers (preflight requests might expect 200)
   })
 );
 
