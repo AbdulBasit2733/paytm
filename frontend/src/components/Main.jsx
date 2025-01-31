@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { Users, ArrowRightLeft, Plus, Send } from "lucide-react";
+import { Users, ArrowRightLeft, Plus, Send, GitPullRequestArrow } from "lucide-react";
 import Header from "./Header";
-import { fetchAllUsers } from "../store/user-slice";
+import { fetchAllUsers } from "../store/user-slice/index";
 import Form from "./Form";
 import Transactions from "./ui/Transactions";
+import UsersCompo from "./ui/UsersCompo";
+import RequestAmount from "./ui/RequestAmount";
 
 const AnimatedTabButton = ({ isSelected, onClick, icon, label }) => (
   <motion.button
@@ -34,18 +36,11 @@ const AnimatedTabButton = ({ isSelected, onClick, icon, label }) => (
 );
 
 const Main = () => {
-  const { isLoading, allUsers } = useSelector((state) => state.user);
   const { user } = useSelector((state) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [recieverId, setRecieverId] = useState();
   const [selected, setSelected] = useState("users");
   const [type, setType] = useState();
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchAllUsers());
-  }, [dispatch]);
 
   const closeModal = () => setIsModalOpen(false);
 
@@ -104,64 +99,19 @@ const Main = () => {
             <AnimatedTabButton
               isSelected={selected === "request"}
               onClick={() => setSelected("request")}
-              icon={<ArrowRightLeft className="w-6 h-6" />}
+              icon={<GitPullRequestArrow className="w-6 h-6" />}
               label="Request"
             />
           </div>
           {selected === "users" ? (
-            <>
-              {allUsers && allUsers.length === 0 ? (
-                <div className="text-center py-8 text-gray-300">
-                  No Users Found
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left border-b border-gray-700">
-                        <th className="py-3 px-4">ID</th>
-                        <th className="py-3 px-4">Name</th>
-                        <th className="py-3 px-4">Username</th>
-                        <th className="py-3 px-4">Email</th>
-                        <th className="py-3 px-4">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allUsers &&
-                        allUsers.map((user, index) => (
-                          <tr
-                            key={user._id}
-                            className="border-b border-gray-700 last:border-b-0"
-                          >
-                            <td className="py-3 px-4">{index + 1}</td>
-                            <td className="py-3 px-4">
-                              {user.firstname} {user.lastname}
-                            </td>
-                            <td className="py-3 px-4">{user.username}</td>
-                            <td className="py-3 px-4">{user.email}</td>
-                            <td className="py-3 px-4">
-                              <button
-                                onClick={() => {
-                                  setIsModalOpen(true);
-                                  setType("send_money");
-                                  setRecieverId(user._id);
-                                }}
-                                className="px-4 py-3 bg-indigo-500 hover:bg-indigo-600 w-full sm:w-auto flex items-center justify-center gap-x-2 text-sm rounded-md font-semibold transition-all duration-300 ease-in-out hover:gap-x-4"
-                              >
-                                <Send className="w-4 h-4" />
-                                Send Money
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </>
-          ) : (
+            <UsersCompo
+              setIsModalOpen={setIsModalOpen}
+              setType={setType}
+              setRecieverId={setRecieverId}
+            />
+          ) : selected === "transactions" ?  (
             <Transactions />
-          )}
+          ) : <RequestAmount /> }
         </div>
       </div>
       {isModalOpen && (

@@ -77,17 +77,13 @@ const Transactions = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between px-4">
-        <h2 className="text-2xl font-bold mb-4">Transactions</h2>
-      </div>
-
       {isLoading ? (
         <div>Loading...</div>
       ) : error ? (
-        <div className="text-red-500">{error}</div>
+        <div className="text-center py-8 text-gray-300">{error}</div>
       ) : transactions.sentTransactions.length === 0 &&
         transactions.receivedTransactions.length === 0 ? (
-        <div>No Transactions Found</div>
+          <div className="text-center py-8 text-gray-300">No Transactions Found</div>
       ) : (
         <>
           {transactions.sentTransactions.map((transaction) =>

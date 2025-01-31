@@ -148,12 +148,13 @@ router.post("/logout", (req, res) => {
 
 router.get("/all-users", AuthMiddleware, async (req, res) => {
   try {
-    const allUsers = await UserModel.find().select("-password");
-
+    
+    const allUsers = await UserModel.find({ _id: { $ne: req.user.userId._id } }).select("-password");
+    
     if (allUsers.length === 0) {
       return res.status(400).json({
         success: true,
-        data: allUsers,
+        data: [],
         message: "Users not found",
       });
     }
