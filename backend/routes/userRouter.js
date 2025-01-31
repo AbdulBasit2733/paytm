@@ -118,11 +118,11 @@ router.post("/signin", async (req, res) => {
     res
       .status(200)
       .cookie("token", token, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "Strict",
-        path: "/",
-        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true, // Ensures the cookie is only accessible through HTTP(S) requests and not via JavaScript (helps prevent XSS)
+        maxAge: 60 * 60 * 1000, // 1 hour expiration
+        sameSite: process.env.NODE_ENV === "development" ? "lax" : "none", // 'Lax' for dev to allow cross-site requests, 'None' for production (use with HTTPS)
+        secure: process.env.NODE_ENV === "development" ? false : true, // Set to true in production (use only over HTTPS)
+        path: "/", // Ensure the cookie is valid for the entire domain
       })
       .json({
         success: true,

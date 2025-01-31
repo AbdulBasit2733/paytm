@@ -1,4 +1,4 @@
-// src/redux/authSlice.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { backendUrl } from "../../../config/config";
@@ -9,13 +9,13 @@ export const checkAuth = createAsyncThunk(
     try {
       
       const response = await axios.get(
-        `${backendUrl}/api/v1/user/auth/check-auth`, // Now correctly concatenating the URL
+        `${backendUrl}/api/v1/user/auth/check-auth`,
         {
           headers: {
             "Cache-Control":
               "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
-          withCredentials: true, // Correct place for the `withCredentials` option
+          withCredentials: true,
         }
       );
 
