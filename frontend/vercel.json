@@ -1,61 +1,39 @@
 {
-    "rewrites": [
-      {
-        "source": "/auth",
-        "destination": "/auth/signin"
-      },
-      {
-        "source": "/",
-        "destination": "/"
-      },
-      {
-        "source": "/(.*)",
-        "destination": "/"
-      }
-    ],
-    "headers": [
-      {
-        "source": "/api/v1/users/(.*)",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "https://paytm-frontend-ruddy.vercel.app"
-          },
-          {
-            "key": "Access-Control-Allow-Methods",
-            "value": "GET, POST, PUT, DELETE"
-          },
-          {
-            "key": "Access-Control-Allow-Headers",
-            "value": "Content-Type, Authorization"
-          },
-          {
-            "key": "Access-Control-Allow-Credentials",
-            "value": "true"
-          }
-        ]
-      },
-      {
-        "source": "/api/v1/account/(.*)",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "https://paytm-frontend-ruddy.vercel.app"
-          },
-          {
-            "key": "Access-Control-Allow-Methods",
-            "value": "GET, POST, PUT, DELETE"
-          },
-          {
-            "key": "Access-Control-Allow-Headers",
-            "value": "Content-Type, Authorization"
-          },
-          {
-            "key": "Access-Control-Allow-Credentials",
-            "value": "true"
-          }
-        ]
-      }
-    ]
-  }
-  
+  "rewrites": [
+    {
+      "source": "/auth",
+      "destination": "/auth/signin"
+    },
+    {
+      "source": "/",
+      "destination": "/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/v1/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://paytm-frontend-ruddy.vercel.app"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        }
+      ]
+    }
+  ]
+}

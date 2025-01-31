@@ -6,10 +6,9 @@ const cookieParser = require("cookie-parser");
 const PORT = process.env.PORT;
 const app = express();
 app.use(express.json());
-app.options("*", cors());
 app.use(cookieParser());
 
-const allowedOrigins = ["https://paytm-frontend-ruddy.vercel.app"];
+const allowedOrigins = ["https://paytm-frontend-ruddy.vercel.app", "http://localhost:5173"]; // Only your production frontend URL
 
 app.use(
   cors({
@@ -18,7 +17,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       // Check if the origin is in the allowedOrigins array
-      if (allowedOrigins.indexOf(origin) !== -1) {
+      if (allowedOrigins.includes(origin)) {
         callback(null, true); // Allow the origin
       } else {
         callback(new Error("Not allowed by CORS")); // Block the origin
@@ -38,8 +37,6 @@ app.use(
   })
 );
 
-// Handle Preflight Requests
-
 const mainRouter = require("./routes/mainRouter");
 app.use("/api/v1", mainRouter);
 
@@ -51,7 +48,7 @@ async function Main() {
     .then(() => {
       console.log("DB is Connected");
       app.listen(PORT, () => {
-        console.log("App is running on port 3001");
+        console.log(`App is running on port ${PORT}`);
       });
     })
     .catch((error) => {
@@ -60,5 +57,3 @@ async function Main() {
 }
 
 Main();
-
-module.exports = app;

@@ -1,14 +1,15 @@
 // src/redux/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import axiosInstance from "../../axiosInstance";
+import { backendUrl } from "../../../config/config";
 
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(
-        "/user/auth/check-auth",
+      
+      const response = await axios.get(
+        `${backendUrl}/api/v1/user/auth/check-auth`, // Now correctly concatenating the URL
         {
           headers: {
             "Cache-Control":
@@ -29,15 +30,16 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
+
 export const login = createAsyncThunk(
   "auth/login",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        "/user/signin",
+      const response = await axios.post(
+        `${backendUrl}/api/v1/user/signin`, // Correctly using the backend URL
         formData,
         {
-          withCredentials: true,
+          withCredentials: true, // Correct place for the `withCredentials` option
         }
       );
       return response.data;
@@ -55,11 +57,17 @@ export const login = createAsyncThunk(
   }
 );
 
-export const signup = createAsyncThunk("auth/signup", async (formData) => {
+
+export const signup = createAsyncThunk("auth/signup", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/user/signup", formData, {
-      withCredentials: true,
-    });
+   
+    const response = await axios.post(
+      `${backendUrl}/api/v1/user/signup`, // Correctly using the backend URL
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
     return response.data;
   } catch (error) {
     console.log("Error Details:", error?.response?.data);
@@ -77,8 +85,8 @@ export const logoutFromServer = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        "/user/logout", // Correct usage
+      const response = await axios.post(
+        `${backendUrl}/api/v1/user/logout`, // Correct usage with backend URL
         {},
         { withCredentials: true }
       );
