@@ -6,22 +6,31 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(express.json());
+app.options("*", cors());
 app.use(cookieParser());
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173",
-];
+const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
 
 app.use(
   cors({
     origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cache-Control",
+      "Expires",
+      "Pragma",
+    ], // Allowed headers in the request
+    preflightContinue: false, // Automatically handle preflight requests
+    optionsSuccessStatus: 200, // For legacy browsers (preflight requests might expect 200)
   })
 );
 
+app.use(express.urlencoded({ extended: true }));
+
 // Handle Preflight Requests
-app.options("*", cors());
 
 const mainRouter = require("../routes/mainRouter");
 app.use("/api/v1", mainRouter);
