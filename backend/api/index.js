@@ -43,3 +43,5 @@ async function Main() {
 }
 
 Main();
+
+module.exports = app;
