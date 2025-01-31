@@ -9,21 +9,28 @@ app.use(express.json());
 app.options("*", cors());
 app.use(cookieParser());
 
+const allowedOrigins = ['https://paytm-frontend-ruddy.vercel.app'];
 
 app.use(
   cors({
-    origin: ["https://paytm-frontend-ruddy.vercel.app", "http://localhost:5173"],
+    origin: function (origin, callback) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true); // Allow the origin
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true, // Allows credentials (cookies, authorization headers)
     allowedHeaders: [
       "Content-Type",
       "Authorization",
       "Cache-Control",
       "Expires",
       "Pragma",
-    ], // Allowed headers in the request
-    preflightContinue: false, // Automatically handle preflight requests
-    optionsSuccessStatus: 200, // For legacy browsers (preflight requests might expect 200)
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 200,
   })
 );
 
