@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Handle Preflight Requests
 
-const mainRouter = require("../routes/mainRouter");
+const mainRouter = require("./routes/mainRouter");
 app.use("/api/v1", mainRouter);
 
 async function Main() {
