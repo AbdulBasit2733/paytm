@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
-
+const PORT= process.env.PORT
 const app = express();
 app.use(express.json());
 app.options("*", cors());
@@ -48,7 +48,7 @@ async function Main() {
     })
     .then(() => {
       console.log("DB is Connected");
-      app.listen(3001, () => {
+      app.listen(PORT, () => {
         console.log("App is running on port 3001");
       });
     })
