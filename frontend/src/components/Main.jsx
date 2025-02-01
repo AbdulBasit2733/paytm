@@ -78,6 +78,16 @@ const Main = () => {
                 <Send className="w-6 h-6" />
                 Send Money
               </button>
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setType("request_money");
+                }}
+                className="px-4 py-3 flex items-center justify-center gap-x-2 hover:gap-x-5 w-full bg-blue-500 hover:bg-blue-800 rounded-md font-semibold transition-all duration-300 ease-in-out"
+              >
+                <Send className="w-6 h-6" />
+                Request Money
+              </button>
             </div>
           </div>
         </div>

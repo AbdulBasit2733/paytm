@@ -4,9 +4,18 @@ import { addBalance, sendMoney, requestMoney } from "../store/user-slice";
 import { toast } from "react-toastify";
 import { checkAuth } from "../store/auth-slice";
 
-const UserSearchInput = ({ label, value, onChange, filteredUsers, onSelect }) => (
+const UserSearchInput = ({
+  label,
+  value,
+  onChange,
+  filteredUsers,
+  onSelect,
+}) => (
   <div className="relative">
-    <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-gray-700">
+    <label
+      htmlFor={label.toLowerCase()}
+      className="block text-sm font-medium text-gray-700"
+    >
       {label}
     </label>
     <input
@@ -29,7 +38,8 @@ const UserSearchInput = ({ label, value, onChange, filteredUsers, onSelect }) =>
               {user.firstname[0]}
             </div>
             <div>
-              {user.firstname} {user.lastname} <span className="text-gray-500">({user.username})</span>
+              {user.firstname} {user.lastname}{" "}
+              <span className="text-gray-500">({user.username})</span>
             </div>
           </div>
         ))}
@@ -55,7 +65,6 @@ const AmountInput = ({ amountRef }) => (
 );
 
 const Form = ({ onClose, type, recieverId }) => {
-
   const { allUsers } = useSelector((state) => state.user);
   const { user } = useSelector((state) => state.auth);
   const [recipient, setRecipient] = useState("");
@@ -120,7 +129,14 @@ const Form = ({ onClose, type, recieverId }) => {
         });
         break;
       case "request_money":
-        dispatch(requestMoney({ requestTo, amount }));
+        dispatch(requestMoney({ requestTo, amount })).then((data) => {
+          if (data.payload.success) {
+            toast.success(data.payload.message);
+            dispatch(checkAuth());
+          } else {
+            toast.error(data.payload.message);
+          }
+        });
         break;
       default:
         console.error("Unknown form type");
