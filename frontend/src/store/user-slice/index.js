@@ -44,11 +44,11 @@ export const addBalance = createAsyncThunk(
 );
 export const requestMoney = createAsyncThunk(
   "account/request-funds",
-  async ({requestTo, description, amount}, { rejectWithValue }) => {
+  async ({requestToId, amount, description }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${backendUrl}/api/v1/account/request-funds`, // Using the backendUrl from config
-        { requestTo, description, amount },
+        { requestToId, amount, description  },
         {
           withCredentials: true,
         }

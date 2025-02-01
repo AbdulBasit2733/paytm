@@ -177,9 +177,8 @@ router.post("/request-funds", AuthMiddleware, async (req, res) => {
 
   try {
     const requesterUserId = req.user.userId._id; 
-    const { requestTo: recipientId, amount, description } = req.body; // FIXED
-    
-    console.log(req.body);
+    const { requestToId: requestToId, amount, description } = req.body; // FIXED
+  
 
     // Validate amount
     if (typeof amount !== "number" || amount <= 0) {
@@ -191,7 +190,7 @@ router.post("/request-funds", AuthMiddleware, async (req, res) => {
     }
 
     // Validate recipientId format
-    if (!mongoose.isValidObjectId(recipientId)) {
+    if (!mongoose.isValidObjectId(requestToId)) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -210,7 +209,7 @@ router.post("/request-funds", AuthMiddleware, async (req, res) => {
     }
 
     // Check if recipient has an account
-    const recipientAccount = await AccountModel.findOne({ userId: recipientId }).session(session);
+    const recipientAccount = await AccountModel.findOne({ userId: requestToId }).session(session);
     if (!recipientAccount) {
       await session.abortTransaction();
       return res.status(404).json({
@@ -224,7 +223,7 @@ router.post("/request-funds", AuthMiddleware, async (req, res) => {
       [
         {
           userId: requesterUserId,
-          requestedUserId: recipientId,
+          requestedUserId: requestToId,
           description,
           status: "Pending",
           amount,

@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = ["https://paytm-frontend-ruddy.vercel.app", "http://localhost:5173"]; // Only your production frontend URL
+const allowedOrigins = ["https://paytm-frontend-ruddy.vercel.app", "http://localhost:5174"]; // Only your production frontend URL
 
 app.use(
   cors({

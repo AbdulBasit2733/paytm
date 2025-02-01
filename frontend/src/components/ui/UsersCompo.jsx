@@ -7,8 +7,6 @@ const UsersCompo = ({ setIsModalOpen, setType, setRecieverId }) => {
   const dispatch = useDispatch();
   const { isLoading, allUsers } = useSelector((state) => state.user);
 
-  console.log(allUsers);
-
   useEffect(() => {
     dispatch(fetchAllUsers());
   }, [dispatch]);
@@ -38,7 +36,8 @@ const UsersCompo = ({ setIsModalOpen, setType, setRecieverId }) => {
           <table className="w-full">
             <thead>
               <tr className="text-left border-b border-gray-700">
-                <th className="py-3 px-4">ID</th>
+                {/* <th className="py-3 px-4">Image</th> */}
+                {/* <th className="py-3 px-4">ID</th> */}
                 <th className="py-3 px-4">Name</th>
                 <th className="py-3 px-4">Username</th>
                 <th className="py-3 px-4">Email</th>
@@ -52,9 +51,17 @@ const UsersCompo = ({ setIsModalOpen, setType, setRecieverId }) => {
                     key={user._id}
                     className="border-b border-gray-700 last:border-b-0"
                   >
-                    <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">
-                      {user.firstname} {user.lastname}
+                    {/* <td className="py-3 px-4 ">
+                      
+                    </td> */}
+                    {/* <td className="py-3 px-4">{index + 1}</td> */}
+                    <td className="py-3 px-4 flex items-center">
+                      <div className="rounded-full w-10 h-10 flex items-center justify-center border-none mr-3 bg-indigo-500">
+                        {user.firstname[0].toUpperCase()}
+                      </div>
+                      <div className="capitalize">
+                        {user.firstname} {user.lastname}
+                      </div>
                     </td>
                     <td className="py-3 px-4">{user.username}</td>
                     <td className="py-3 px-4">{user.email}</td>
