@@ -43,12 +43,12 @@ export const addBalance = createAsyncThunk(
   }
 );
 export const requestMoney = createAsyncThunk(
-  "account/request_money",
-  async (amount, { rejectWithValue }) => {
+  "account/request-funds",
+  async ({requestToId, amount, description }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${backendUrl}/api/v1/account/request-money`, // Using the backendUrl from config
-        { amount },
+        `${backendUrl}/api/v1/account/request-funds`, // Using the backendUrl from config
+        { requestToId, amount, description  },
         {
           withCredentials: true,
         }
@@ -92,6 +92,26 @@ export const checkTransactions = createAsyncThunk(
     try {
       const response = await axios.get(
         `${backendUrl}/api/v1/account/check-transactions`, // Using the backendUrl from config
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      // console.log(error?.response);
+      return rejectWithValue({
+        success: false,
+        message: error?.response?.data?.message || "Something Went Wrong",
+      });
+    }
+  }
+);
+export const checkRequests = createAsyncThunk(
+  "account/checkRequest",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/v1/account/all-requests`, // Using the backendUrl from config
         {
           withCredentials: true,
         }

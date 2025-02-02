@@ -86,11 +86,16 @@ const RequestMoneySchema = new mongoose.Schema({
   },
   requestedUserId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Account",
+    ref: "User",
     required: true,
   },
   description: {
     type: String,
+  },
+  status:{
+    type:String,
+    enum:["Paid", "Pending"],
+    required:true,
   },
   amount: {
     type: Number,
@@ -99,7 +104,8 @@ const RequestMoneySchema = new mongoose.Schema({
 });
 
 const AccountModel = mongoose.model("Account", AccountSchema);
+const RequestMoneyModel = mongoose.model("Request", RequestMoneySchema);
 const TransactionModel = mongoose.model("Transaction", TransactionSchema);
 const UserModel = mongoose.model("User", UserSchema);
 
-module.exports = { UserModel, AccountModel,TransactionModel };
+module.exports = { UserModel, AccountModel,TransactionModel, RequestMoneyModel };

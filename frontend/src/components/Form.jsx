@@ -1,12 +1,21 @@
 import { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addBalance, sendMoney, requestMoney } from "../store/user-slice";
+import { addBalance, sendMoney, requestMoney } from "../store/user-slice/index";
 import { toast } from "react-toastify";
 import { checkAuth } from "../store/auth-slice";
 
-const UserSearchInput = ({ label, value, onChange, filteredUsers, onSelect }) => (
+const UserSearchInput = ({
+  label,
+  value,
+  onChange,
+  filteredUsers,
+  onSelect,
+}) => (
   <div className="relative">
-    <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-gray-700">
+    <label
+      htmlFor={label.toLowerCase()}
+      className="block text-sm font-medium text-gray-700"
+    >
       {label}
     </label>
     <input
@@ -26,10 +35,11 @@ const UserSearchInput = ({ label, value, onChange, filteredUsers, onSelect }) =>
             onClick={() => onSelect(user)}
           >
             <div className="rounded-full w-10 h-10 flex items-center justify-center border mr-3 bg-gray-200">
-              {user.firstname[0]}
+              {user.firstname[0].toUpperCase()}
             </div>
             <div>
-              {user.firstname} {user.lastname} <span className="text-gray-500">({user.username})</span>
+              {user.firstname} {user.lastname}{" "}
+              <span className="text-gray-500">({user.username})</span>
             </div>
           </div>
         ))}
@@ -55,14 +65,15 @@ const AmountInput = ({ amountRef }) => (
 );
 
 const Form = ({ onClose, type, recieverId }) => {
-
   const { allUsers } = useSelector((state) => state.user);
   const { user } = useSelector((state) => state.auth);
   const [recipient, setRecipient] = useState("");
   const [recipientId, setRecipientId] = useState(recieverId || ""); // Default to recieverId if provided
   const [requestTo, setRequestTo] = useState("");
+  const [requestToId, setRequestToId] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const amountRef = useRef();
+  const descriptionRef = useRef();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -106,6 +117,7 @@ const Form = ({ onClose, type, recieverId }) => {
         });
         break;
       case "send_money":
+        
         if (!recipientId) {
           toast.error("Please select a recipient");
           return;
@@ -120,7 +132,17 @@ const Form = ({ onClose, type, recieverId }) => {
         });
         break;
       case "request_money":
-        dispatch(requestMoney({ requestTo, amount }));
+        const description = descriptionRef.current.value;
+        dispatch(requestMoney({ requestToId, amount, description })).then(
+          (data) => {
+            if (data.payload.success) {
+              toast.success(data.payload.message);
+              dispatch(checkAuth());
+            } else {
+              toast.error(data.payload.message);
+            }
+          }
+        );
         break;
       default:
         console.error("Unknown form type");
@@ -133,6 +155,9 @@ const Form = ({ onClose, type, recieverId }) => {
     if (type === "send_money") {
       setRecipient(fullName);
       setRecipientId(user._id);
+    } else if (type === "request_money") {
+      setRequestTo(fullName);
+      setRequestToId(user._id);
     } else {
       setRequestTo(fullName);
     }
@@ -163,6 +188,17 @@ const Form = ({ onClose, type, recieverId }) => {
             filteredUsers={filteredUsers}
             onSelect={handleUserSelect}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <input
+              type="text"
+              ref={descriptionRef}
+              className="mt-1 py-2 px-3 block w-full rounded-md border border-gray-300 shadow-sm text-slate-950 outline-none"
+              placeholder="Search by name or username"
+            />
+          </div>
           <AmountInput amountRef={amountRef} />
         </>
       )}

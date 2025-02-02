@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const { UserModel, AccountModel, TransactionModel } = require("../db");
+const { UserModel, AccountModel, TransactionModel, RequestMoneyModel } = require("../db");
 const AuthMiddleware = require("../middleware/middleware");
 
 const router = express.Router();
@@ -171,6 +171,83 @@ router.post("/transfer-funds", AuthMiddleware, async (req, res) => {
     session.endSession();
   }
 });
+router.post("/request-funds", AuthMiddleware, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const requesterUserId = req.user.userId._id; 
+    const { requestToId: requestToId, amount, description } = req.body; // FIXED
+  
+
+    // Validate amount
+    if (typeof amount !== "number" || amount <= 0) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid amount. Must be a positive number.",
+      });
+    }
+
+    // Validate recipientId format
+    if (!mongoose.isValidObjectId(requestToId)) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid recipient ID format.",
+      });
+    }
+
+    // Check if requester has an account
+    const requesterAccount = await AccountModel.findOne({ userId: requesterUserId }).session(session);
+    if (!requesterAccount) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Requester account not found.",
+      });
+    }
+
+    // Check if recipient has an account
+    const recipientAccount = await AccountModel.findOne({ userId: requestToId }).session(session);
+    if (!recipientAccount) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Recipient account not found.",
+      });
+    }
+
+    // Create the fund request
+    await RequestMoneyModel.create(
+      [
+        {
+          userId: requesterUserId,
+          requestedUserId: requestToId,
+          description,
+          status: "Pending",
+          amount,
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+
+    res.status(200).json({
+      success: true,
+      message: "Funds request sent successfully.",
+    });
+
+  } catch (error) {
+    console.error("Error requesting funds:", error);
+    await session.abortTransaction();
+    res.status(500).json({ success: false, message: "Internal Server Error." });
+  } finally {
+    session.endSession();
+  }
+});
+
 router.get("/check-transactions", AuthMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId._id;
@@ -208,5 +285,35 @@ router.get("/check-transactions", AuthMiddleware, async (req, res) => {
       .json({ success: false, message: "Internal Server Error." });
   }
 });
+
+router.get("/all-requests", AuthMiddleware, async (req, res) => {
+  try {
+    const authenticatedUserId = req.user.userId._id;
+
+    // Fetch sent & received requests separately
+    const sentRequests = await RequestMoneyModel.find({ userId: authenticatedUserId })
+      .populate("userId", "firstname lastname")
+      .populate("requestedUserId", "firstname lastname")
+      .sort({ createdAt: -1 });
+
+    const receivedRequests = await RequestMoneyModel.find({ requestedUserId: authenticatedUserId })
+      .populate("userId", "firstname lastname")
+      .populate("requestedUserId", "firstname lastname")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        sentRequests,
+        receivedRequests,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching fund requests:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error." });
+  }
+});
+
+
 
 module.exports = router;
