@@ -105,9 +105,6 @@ const Form = ({ onClose, type, recieverId }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const amount = Number(amountRef.current.value);
-    
-  
-    
     switch (type) {
       case "add_balance":
         dispatch(addBalance({ amount })).then((data) => {
